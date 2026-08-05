@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Manrope', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  --color-ink: #1E2749;
+  --color-ink-light: #2E3A63;
+  --color-marigold: #F0A83B;
+  --color-marigold-light: #FBE4BE;
+  --color-leaf: #1F9D6F;
+  --color-leaf-light: #DCF3E9;
+  --color-coral: #E85C4A;
+  --color-coral-light: #FBE0DC;
+  --color-surface: #F4F5FA;
+  --color-surface-warm: #FAF8F4;
+  --color-muted: #6B7280;
+  --color-border-soft: #E4E6F0;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-body);
+  background: #FFFFFF;
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-marigold);
+  outline-offset: 2px;
+}
