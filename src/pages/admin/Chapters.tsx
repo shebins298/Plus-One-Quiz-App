@@ -41,7 +41,12 @@ export function Chapters() {
   }
 
   async function togglePublish(c: Chapter) {
-    await supabase.from('chapters').update({ is_published: !c.is_published }).eq('id', c.id)
+    const goingLive = !c.is_published
+    const payload: { is_published: boolean; published_at?: string } = { is_published: goingLive }
+    if (goingLive && !c.published_at) {
+      payload.published_at = new Date().toISOString()
+    }
+    await supabase.from('chapters').update(payload).eq('id', c.id)
     load()
   }
 

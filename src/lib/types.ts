@@ -15,6 +15,7 @@ export type Chapter = {
   order_index: number
   max_attempts: number | null
   is_published: boolean
+  published_at: string | null
   created_at: string
 }
 
@@ -51,6 +52,17 @@ export type QuizAttempt = {
   status: 'in_progress' | 'completed'
   started_at: string
   completed_at: string | null
+  is_practice: boolean
+}
+
+export type ReviewItem = {
+  question_text: string
+  options: QuestionOption[]
+  selected_option_id: string
+  correct_option_id: string
+  explanation: string | null
+  is_correct: boolean
+  order_index: number
 }
 
 export type AppSettings = {

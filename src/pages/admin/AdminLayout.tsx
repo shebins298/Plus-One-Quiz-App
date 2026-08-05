@@ -11,7 +11,7 @@ export function AdminLayout() {
   const { signOut, profile } = useAuth()
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--color-surface)' }}>
+    <div className="min-h-dvh" style={{ background: 'var(--color-surface)' }}>
       <header className="px-5 sm:px-8 pt-6 pb-4" style={{ background: 'var(--color-ink)' }}>
         <div className="flex items-center justify-between mb-5">
           <div>

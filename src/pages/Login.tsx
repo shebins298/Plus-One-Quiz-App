@@ -4,7 +4,7 @@ export function Login() {
   const { signInWithGoogle } = useAuth()
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: 'var(--color-ink)' }}>
+    <div className="min-h-dvh flex flex-col items-center justify-center px-6" style={{ background: 'var(--color-ink)' }}>
       <div className="w-full max-w-sm text-center">
         <div
           className="mx-auto mb-8 flex items-center justify-center rounded-2xl"

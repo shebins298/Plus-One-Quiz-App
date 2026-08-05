@@ -4,6 +4,8 @@ import { Login } from './pages/Login'
 import { OnboardingModal } from './components/OnboardingModal'
 import { ChapterList } from './pages/student/ChapterList'
 import { Quiz } from './pages/student/Quiz'
+import { Practice } from './pages/student/Practice'
+import { Review } from './pages/student/Review'
 import { AdminLayout } from './pages/admin/AdminLayout'
 import { Roster } from './pages/admin/Roster'
 import { StudentDetail } from './pages/admin/StudentDetail'
@@ -14,7 +16,7 @@ import { Analytics } from './pages/admin/Analytics'
 function BannedScreen() {
   const { signOut } = useAuth()
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+    <div className="min-h-dvh flex flex-col items-center justify-center px-6 text-center">
       <p className="font-display text-2xl mb-2">Access restricted</p>
       <p className="text-sm mb-6" style={{ color: 'var(--color-muted)' }}>
         Your teacher has restricted access to this account. Contact them if you think this is a mistake.
@@ -28,7 +30,7 @@ function Gate() {
   const { session, profile, loading, needsOnboarding } = useAuth()
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-sm" style={{ color: 'var(--color-muted)' }}>Loading…</div>
+    return <div className="min-h-dvh flex items-center justify-center text-sm" style={{ color: 'var(--color-muted)' }}>Loading…</div>
   }
 
   if (!session) return <Login />
@@ -38,7 +40,7 @@ function Gate() {
   if (needsOnboarding) return <OnboardingModal />
 
   if (!profile) {
-    return <div className="min-h-screen flex items-center justify-center text-sm" style={{ color: 'var(--color-muted)' }}>Setting up your account…</div>
+    return <div className="min-h-dvh flex items-center justify-center text-sm" style={{ color: 'var(--color-muted)' }}>Setting up your account…</div>
   }
 
   if (profile.role === 'admin') {
@@ -60,6 +62,8 @@ function Gate() {
     <Routes>
       <Route path="/" element={<ChapterList />} />
       <Route path="/quiz/:chapterId" element={<Quiz />} />
+      <Route path="/practice/:chapterId" element={<Practice />} />
+      <Route path="/review/:attemptId" element={<Review />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

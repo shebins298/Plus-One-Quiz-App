@@ -4,11 +4,13 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../lib/AuthContext'
 import type { Chapter, QuizAttempt } from '../../lib/types'
 import { ScoreDial, AttemptDots } from '../../components/ScoreDial'
+import { BadgeStrip } from '../../components/BadgeStrip'
 
 type ChapterRow = Chapter & {
   attemptsUsed: number
   bestPercent: number | null
   effectiveMax: number | null
+  weakCount: number
 }
 
 export function ChapterList() {
@@ -24,9 +26,18 @@ export function ChapterList() {
           .from('quiz_attempts')
           .select('*')
           .eq('student_id', session!.user.id)
-          .eq('status', 'completed'),
+          .eq('status', 'completed')
+          .eq('is_practice', false),
         supabase.from('app_settings').select('default_max_attempts').eq('id', 1).single(),
       ])
+
+      const weakCounts = await Promise.all(
+        (chapters ?? []).map(async (c) => {
+          const { data } = await supabase.rpc('get_weak_questions', { p_chapter_id: c.id })
+          return [c.id, (data ?? []).length] as const
+        })
+      )
+      const weakByChapter = new Map(weakCounts)
 
       const defaultMax = settings?.default_max_attempts ?? null
       const byChapter = new Map<string, QuizAttempt[]>()
@@ -48,6 +59,7 @@ export function ChapterList() {
           attemptsUsed: list.length,
           bestPercent: best,
           effectiveMax: c.max_attempts ?? defaultMax,
+          weakCount: weakByChapter.get(c.id) ?? 0,
         }
       })
 
@@ -58,7 +70,7 @@ export function ChapterList() {
   }, [session])
 
   return (
-    <div className="min-h-screen pb-10" style={{ background: 'var(--color-surface)' }}>
+    <div className="min-h-dvh pb-10" style={{ background: 'var(--color-surface)' }}>
       <header className="px-5 pt-8 pb-6" style={{ background: 'var(--color-ink)' }}>
         <div className="flex items-center justify-between">
           <div>
@@ -72,6 +84,11 @@ export function ChapterList() {
       </header>
 
       <main className="px-5 -mt-3">
+        {session && (
+          <div className="bg-white rounded-2xl p-4 mb-4 shadow-sm">
+            <BadgeStrip studentId={session.user.id} />
+          </div>
+        )}
         {loading ? (
           <p className="text-center py-16 text-sm" style={{ color: 'var(--color-muted)' }}>Loading chapters…</p>
         ) : rows.length === 0 ? (
@@ -84,26 +101,38 @@ export function ChapterList() {
             {rows.map((c) => {
               const exhausted = c.effectiveMax !== null && c.attemptsUsed >= c.effectiveMax
               return (
-                <div key={c.id} className="bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm">
-                  <ScoreDial percent={c.bestPercent} size={58} strokeWidth={5} />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-display text-base leading-tight mb-1 truncate">{c.title}</h3>
-                    <AttemptDots used={c.attemptsUsed} max={c.effectiveMax} />
+                <div key={c.id} className="bg-white rounded-2xl p-4 shadow-sm">
+                  <div className="flex items-center gap-4">
+                    <ScoreDial percent={c.bestPercent} size={58} strokeWidth={5} />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-display text-base leading-tight mb-1 truncate">{c.title}</h3>
+                      <AttemptDots used={c.attemptsUsed} max={c.effectiveMax} />
+                    </div>
+                    {exhausted ? (
+                      <span
+                        className="text-xs font-semibold px-3 py-2 rounded-lg text-center shrink-0"
+                        style={{ background: 'var(--color-coral-light)', color: 'var(--color-coral)' }}
+                      >
+                        No attempts left
+                      </span>
+                    ) : (
+                      <Link
+                        to={`/quiz/${c.id}`}
+                        className="text-xs font-semibold px-3.5 py-2.5 rounded-lg shrink-0 whitespace-nowrap"
+                        style={{ background: 'var(--color-marigold)', color: 'var(--color-ink)' }}
+                      >
+                        {c.attemptsUsed > 0 ? 'Retake' : 'Start quiz'}
+                      </Link>
+                    )}
                   </div>
-                  {exhausted ? (
-                    <span
-                      className="text-xs font-semibold px-3 py-2 rounded-lg text-center shrink-0"
-                      style={{ background: 'var(--color-coral-light)', color: 'var(--color-coral)' }}
-                    >
-                      No attempts left
-                    </span>
-                  ) : (
+                  {c.weakCount > 0 && (
                     <Link
-                      to={`/quiz/${c.id}`}
-                      className="text-xs font-semibold px-3.5 py-2.5 rounded-lg shrink-0 whitespace-nowrap"
-                      style={{ background: 'var(--color-marigold)', color: 'var(--color-ink)' }}
+                      to={`/practice/${c.id}`}
+                      className="mt-3 flex items-center justify-between text-xs font-semibold px-3.5 py-2.5 rounded-lg"
+                      style={{ background: 'var(--color-surface)', color: 'var(--color-ink)' }}
                     >
-                      {c.attemptsUsed > 0 ? 'Retake' : 'Start quiz'}
+                      <span>Practice {c.weakCount} weak spot{c.weakCount === 1 ? '' : 's'}</span>
+                      <span style={{ color: 'var(--color-muted)' }}>→</span>
                     </Link>
                   )}
                 </div>

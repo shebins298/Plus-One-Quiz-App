@@ -14,7 +14,7 @@ export function Analytics() {
     async function load() {
       const [{ data: c }, { data: a }, { data: s }] = await Promise.all([
         supabase.from('chapters').select('*').order('order_index'),
-        supabase.from('quiz_attempts').select('*').eq('status', 'completed'),
+        supabase.from('quiz_attempts').select('*').eq('status', 'completed').eq('is_practice', false),
         supabase.from('profiles').select('*').eq('role', 'student'),
       ])
       setChapters((c ?? []) as Chapter[])
