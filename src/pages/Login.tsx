@@ -10,11 +10,11 @@ export function Login() {
           className="mx-auto mb-8 flex items-center justify-center rounded-2xl"
           style={{ width: 64, height: 64, background: 'var(--color-marigold)' }}
         >
-          <span className="font-display text-3xl font-semibold" style={{ color: 'var(--color-ink)' }}>P1</span>
+          <span className="font-display text-2xl font-semibold" style={{ color: 'var(--color-ink)' }}>CA</span>
         </div>
 
         <h1 className="font-display text-4xl text-white mb-3" style={{ letterSpacing: '-0.01em' }}>
-          Plus One Prep
+          Plus One Computer Application
         </h1>
         <p className="text-base mb-10" style={{ color: '#A8AEC4' }}>
           Chapter-wise quizzes to track how you're really doing, chapter by chapter.

@@ -135,8 +135,8 @@ export function Quiz() {
   const q = questions[index]
 
   return (
-    <div className="min-h-dvh flex flex-col" style={{ background: 'var(--color-surface)' }}>
-      <header className="px-5 pt-6 pb-4">
+    <div className="h-dvh flex flex-col overflow-hidden" style={{ background: 'var(--color-surface)' }}>
+      <header className="px-5 pt-6 pb-4 shrink-0">
         <div className="flex items-center justify-between mb-3">
           <button onClick={() => navigate('/')} className="text-sm font-medium" style={{ color: 'var(--color-muted)' }}>
             ← Exit
@@ -153,7 +153,7 @@ export function Quiz() {
         </div>
       </header>
 
-      <main className="flex-1 px-5 flex flex-col" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
+      <div className="flex-1 overflow-y-auto px-5">
         <h2 className="font-display text-xl leading-snug mb-6 mt-2">{q.question_text}</h2>
 
         <div className="flex flex-col gap-3">
@@ -188,13 +188,13 @@ export function Quiz() {
             {feedback.explanation}
           </div>
         )}
+      </div>
 
-        <div className="flex-1" />
-
+      <div className="shrink-0 px-5 pt-3" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
         {feedback ? (
           <button
             onClick={handleNext}
-            className="w-full rounded-xl py-3.5 font-semibold text-base mt-6"
+            className="w-full rounded-xl py-3.5 font-semibold text-base"
             style={{ background: 'var(--color-ink)', color: 'white' }}
           >
             {index + 1 < questions.length ? 'Next question' : 'See results'}
@@ -203,13 +203,13 @@ export function Quiz() {
           <button
             onClick={handleSubmitAnswer}
             disabled={!selected || submitting}
-            className="w-full rounded-xl py-3.5 font-semibold text-base mt-6 disabled:opacity-50"
+            className="w-full rounded-xl py-3.5 font-semibold text-base disabled:opacity-50"
             style={{ background: 'var(--color-marigold)', color: 'var(--color-ink)' }}
           >
             {submitting ? 'Checking…' : 'Submit answer'}
           </button>
         )}
-      </main>
+      </div>
     </div>
   )
 }

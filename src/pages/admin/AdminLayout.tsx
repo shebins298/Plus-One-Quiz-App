@@ -15,7 +15,7 @@ export function AdminLayout() {
       <header className="px-5 sm:px-8 pt-6 pb-4" style={{ background: 'var(--color-ink)' }}>
         <div className="flex items-center justify-between mb-5">
           <div>
-            <p className="text-xs font-medium" style={{ color: '#A8AEC4' }}>Admin</p>
+            <p className="text-xs font-medium" style={{ color: '#A8AEC4' }}>Admin · Plus One Computer Application</p>
             <h1 className="font-display text-2xl text-white">{profile?.full_name ?? 'Dashboard'}</h1>
           </div>
           <button onClick={signOut} className="text-xs font-medium underline" style={{ color: '#A8AEC4' }}>
