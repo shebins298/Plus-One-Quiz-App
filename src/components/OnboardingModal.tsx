@@ -49,7 +49,7 @@ export function OnboardingModal() {
               autoFocus
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Your Full Name"
+              placeholder="e.g. Anjali Menon"
               className="w-full rounded-xl px-4 py-3 text-base border outline-none"
               style={{ borderColor: 'var(--color-border-soft)' }}
             />
@@ -61,7 +61,7 @@ export function OnboardingModal() {
             <input
               value={schoolName}
               onChange={(e) => setSchoolName(e.target.value)}
-              placeholder="Your School Name"
+              placeholder="e.g. Govt HSS Kottarakara"
               className="w-full rounded-xl px-4 py-3 text-base border outline-none"
               style={{ borderColor: 'var(--color-border-soft)' }}
             />
