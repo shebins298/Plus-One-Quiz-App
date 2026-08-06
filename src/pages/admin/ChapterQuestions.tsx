@@ -10,7 +10,23 @@ const emptyOptions: QuestionOption[] = [
   { id: 'd', text: '' },
 ]
 
-function QuestionEditor({ q, onSave, onDelete }: { q: Question; onSave: (q: Question) => void; onDelete: () => void }) {
+function correctRateColor(rate: number) {
+  if (rate >= 75) return { bg: 'var(--color-leaf-light)', fg: 'var(--color-leaf)' }
+  if (rate >= 40) return { bg: 'var(--color-marigold-light)', fg: 'var(--color-ink)' }
+  return { bg: 'var(--color-coral-light)', fg: 'var(--color-coral)' }
+}
+
+function QuestionEditor({
+  q,
+  stat,
+  onSave,
+  onDelete,
+}: {
+  q: Question
+  stat?: { correct_count: number; total_count: number }
+  onSave: (q: Question) => void
+  onDelete: () => void
+}) {
   const [draft, setDraft] = useState<Question>(q)
   const [dirty, setDirty] = useState(false)
 
@@ -23,15 +39,28 @@ function QuestionEditor({ q, onSave, onDelete }: { q: Question; onSave: (q: Ques
     update('options', draft.options.map((o) => (o.id === id ? { ...o, text } : o)))
   }
 
+  const rate = stat && stat.total_count > 0 ? Math.round((stat.correct_count / stat.total_count) * 100) : null
+
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm">
-      <textarea
-        value={draft.question_text}
-        onChange={(e) => update('question_text', e.target.value)}
-        rows={2}
-        className="w-full rounded-lg px-3 py-2 text-sm border outline-none font-medium mb-3 resize-none"
-        style={{ borderColor: 'var(--color-border-soft)' }}
-      />
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <textarea
+          value={draft.question_text}
+          onChange={(e) => update('question_text', e.target.value)}
+          rows={2}
+          className="flex-1 rounded-lg px-3 py-2 text-sm border outline-none font-medium resize-none"
+          style={{ borderColor: 'var(--color-border-soft)' }}
+        />
+        {rate !== null && (
+          <span
+            className="text-[10px] font-mono font-semibold px-2 py-1.5 rounded-lg shrink-0 whitespace-nowrap"
+            style={{ background: correctRateColor(rate).bg, color: correctRateColor(rate).fg }}
+            title={`${stat!.correct_count} of ${stat!.total_count} answered correctly`}
+          >
+            {rate}% · {stat!.total_count}
+          </span>
+        )}
+      </div>
       <div className="flex flex-col gap-2 mb-3">
         {draft.options.map((opt) => (
           <div key={opt.id} className="flex items-center gap-2">
@@ -86,15 +115,24 @@ export function ChapterQuestions() {
   const { chapterId } = useParams()
   const [chapter, setChapter] = useState<Chapter | null>(null)
   const [questions, setQuestions] = useState<Question[]>([])
+  const [stats, setStats] = useState<Map<string, { correct_count: number; total_count: number }>>(new Map())
   const [loading, setLoading] = useState(true)
 
   async function load() {
-    const [{ data: c }, { data: qs }] = await Promise.all([
+    const [{ data: c }, { data: qs }, { data: statData }] = await Promise.all([
       supabase.from('chapters').select('*').eq('id', chapterId).single(),
       supabase.from('questions').select('*').eq('chapter_id', chapterId).order('order_index'),
+      supabase.rpc('admin_question_stats'),
     ])
     setChapter(c as Chapter)
     setQuestions((qs ?? []) as Question[])
+    const map = new Map<string, { correct_count: number; total_count: number }>()
+    ;(statData ?? [])
+      .filter((s: { chapter_id: string }) => s.chapter_id === chapterId)
+      .forEach((s: { question_id: string; correct_count: number; total_count: number }) => {
+        map.set(s.question_id, { correct_count: s.correct_count, total_count: s.total_count })
+      })
+    setStats(map)
     setLoading(false)
   }
 
@@ -163,7 +201,7 @@ export function ChapterQuestions() {
           </div>
         ) : (
           questions.map((q) => (
-            <QuestionEditor key={q.id} q={q} onSave={saveQuestion} onDelete={() => deleteQuestion(q.id)} />
+            <QuestionEditor key={q.id} q={q} stat={stats.get(q.id)} onSave={saveQuestion} onDelete={() => deleteQuestion(q.id)} />
           ))
         )}
       </div>

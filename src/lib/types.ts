@@ -65,6 +65,21 @@ export type ReviewItem = {
   order_index: number
 }
 
+export type QuestionStat = {
+  question_id: string
+  question_text: string
+  chapter_id: string
+  chapter_title: string
+  correct_count: number
+  total_count: number
+}
+
+export type StudentChapterCell = {
+  student_id: string
+  chapter_id: string
+  best_percent: number
+}
+
 export type AppSettings = {
   id: number
   default_max_attempts: number
