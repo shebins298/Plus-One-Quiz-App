@@ -124,6 +124,32 @@ export function Analytics() {
     [students]
   )
 
+  const [rankChapterId, setRankChapterId] = useState<string>('')
+  const [rankView, setRankView] = useState<'all' | 'top' | 'bottom'>('all')
+
+  useEffect(() => {
+    if (!rankChapterId && publishedChapters.length > 0) {
+      setRankChapterId(publishedChapters[0].id)
+    }
+  }, [publishedChapters, rankChapterId])
+
+  const chapterRanked = useMemo(() => {
+    if (!rankChapterId) return []
+    return students
+      .filter((s) => s.status === 'active')
+      .map((s) => ({ student: s, pct: matrixMap.get(`${s.id}_${rankChapterId}`) }))
+      .filter((row): row is { student: Profile; pct: number } => row.pct !== undefined)
+      .sort((a, b) => b.pct - a.pct)
+  }, [students, matrixMap, rankChapterId])
+
+  const chapterNotAttempted = useMemo(() => {
+    if (!rankChapterId) return 0
+    return students.filter((s) => s.status === 'active' && matrixMap.get(`${s.id}_${rankChapterId}`) === undefined).length
+  }, [students, matrixMap, rankChapterId])
+
+  const chapterRankedVisible =
+    rankView === 'top' ? chapterRanked.slice(0, 10) : rankView === 'bottom' ? chapterRanked.slice(-10).reverse() : chapterRanked
+
   if (loading) return <p className="text-sm" style={{ color: 'var(--color-muted)' }}>Loading…</p>
 
   return (
@@ -313,6 +339,83 @@ export function Analytics() {
             </div>
           )}
         </div>
+      </div>
+
+      <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm mb-6">
+        <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+          <h3 className="font-display text-lg">Rank list</h3>
+          <div className="flex gap-1">
+            {(['top', 'all', 'bottom'] as const).map((v) => (
+              <button
+                key={v}
+                onClick={() => setRankView(v)}
+                className="text-xs font-semibold px-2.5 py-1 rounded-lg capitalize"
+                style={{
+                  background: rankView === v ? 'var(--color-ink)' : 'var(--color-surface)',
+                  color: rankView === v ? 'white' : 'var(--color-ink)',
+                }}
+              >
+                {v === 'top' ? 'Top 10' : v === 'bottom' ? 'Bottom 10' : 'All'}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="mb-4">
+          <select
+            value={rankChapterId}
+            onChange={(e) => setRankChapterId(e.target.value)}
+            className="w-full sm:w-auto rounded-lg px-3 py-2 text-sm border outline-none bg-white"
+            style={{ borderColor: 'var(--color-border-soft)' }}
+          >
+            {publishedChapters.map((c) => (
+              <option key={c.id} value={c.id}>{c.title}</option>
+            ))}
+          </select>
+          {chapterRanked.length > 0 && (
+            <p className="text-xs mt-2" style={{ color: 'var(--color-muted)' }}>
+              {chapterRanked.length} attempted · {chapterNotAttempted} not yet attempted
+            </p>
+          )}
+        </div>
+        {publishedChapters.length === 0 ? (
+          <p className="text-sm" style={{ color: 'var(--color-muted)' }}>Publish a chapter to see rankings.</p>
+        ) : chapterRanked.length === 0 ? (
+          <p className="text-sm" style={{ color: 'var(--color-muted)' }}>No attempts yet for this chapter.</p>
+        ) : (
+          <div className="flex flex-col gap-1">
+            {chapterRankedVisible.map((row, i) => {
+              const rank = rankView === 'bottom' ? chapterRanked.length - i : i + 1
+              return (
+                <Link
+                  key={row.student.id}
+                  to={`/admin/students/${row.student.id}`}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg"
+                  style={{ background: 'var(--color-surface)' }}
+                >
+                  <span
+                    className="text-xs font-mono font-bold w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+                    style={{
+                      background: rank <= 3 ? 'var(--color-marigold)' : 'white',
+                      color: rank <= 3 ? 'var(--color-ink)' : 'var(--color-muted)',
+                    }}
+                  >
+                    {rank}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{row.student.full_name ?? '(no name)'}</p>
+                    <p className="text-xs truncate" style={{ color: 'var(--color-muted)' }}>{row.student.school_name ?? '—'}</p>
+                  </div>
+                  <span
+                    className="text-xs font-mono font-semibold px-2 py-1 rounded shrink-0"
+                    style={{ background: heatColor(row.pct).bg, color: heatColor(row.pct).fg }}
+                  >
+                    {Math.round(row.pct)}%
+                  </span>
+                </Link>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm">
